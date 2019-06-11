@@ -112,4 +112,30 @@ server.put('/accounts/:id', (req, res) => {
     })
 });
 
+// remove(): the remove method accepts an id as it's first parameter and upon successfully deleting the account from the database
+// it returns returns a promise that resolves with the number of records deleted.
+
+server.delete('/accounts/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.remove(id)
+    .then(response => {
+      if (response === 0) {
+        res.status(404).json({
+          message: "The user with the specified ID does not exist."
+        });
+      } else {
+        res.json({
+          success: `User with id: ${id} removed from system`
+        });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({
+        error: "The user could not be removed"
+      });
+    });
+});
+
+
 module.exports = server;
