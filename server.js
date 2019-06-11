@@ -47,6 +47,9 @@ server.get('/accounts/:id', (req, res) => {
     });
 });
 
+// add(): calling add passing it a account object will add it to the database
+// and return a promise that resolves with the newly inserted account.
+
 server.post('/accounts', async (req, res) => {
   const { name, budget } = req.body;
   if (!name || !budget) {
@@ -69,6 +72,44 @@ server.post('/accounts', async (req, res) => {
           error: "There was an error while saving the user to the database",
         });
       });
+});
+
+// Update accepts two arguments, the first is the id of the account to update
+// and the second is an object with the changes to apply
+
+server.put('/accounts/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, budget } = req.body;
+  if (!name || !budget) {
+    res.status(400).json({
+      errorMessage: "The user with the specified ID does not exist."
+    });
+  }
+
+  db.update(id, { name, budget })
+    .then(response => {
+      if (response == 0) {
+        res.status(404).json({
+          errorMessage: "Please provide name and bio for the user."
+        })
+      }
+
+      db.findById(id)
+        .then(account => {
+          if (account.length === 0) {
+            res.status(500).json({
+              error: "The user information could not be modified."
+            })
+          } else {
+            res.json(account);
+          }
+        })
+        .catch(err => {
+          res.status(200).json({
+            errorMessage: "Can't find user by id."
+          });
+        });
+    })
 });
 
 module.exports = server;
